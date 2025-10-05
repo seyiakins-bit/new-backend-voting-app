@@ -11,20 +11,25 @@ dotenv.config();
 
 const app = express();
 
-// Allowed origins
+// ✅ Define allowed origins
 const allowedOrigins = [
-  "https://new-voting-app-frontend.vercel.app", // main frontend
-  "http://localhost:5173",                       // local testing
+  "https://new-voting-app-frontend.vercel.app", // main frontend on Vercel
+  "http://localhost:5173",                      // local development
 ];
 
-// CORS middleware
+// ✅ Configure CORS middleware
 app.use(
   cors({
-    origin: function(origin, callback) {
-      // Allow Postman or known origins
-      if (!origin || allowedOrigins.includes(origin) || (origin && origin.includes("vercel.app"))) {
+    origin: function (origin, callback) {
+      // Allow Postman (no origin) and Vercel preview URLs
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app")
+      ) {
         callback(null, true);
       } else {
+        console.warn(`❌ Blocked by CORS: ${origin}`);
         callback(new Error("CORS policy: This origin is not allowed"));
       }
     },
@@ -36,23 +41,27 @@ app.use(
 
 app.use(express.json());
 
-// Test route
-app.get("/", (req, res) => res.send("Server is running"));
+// ✅ Root test route
+app.get("/", (req, res) => res.send("✅ Server is running successfully!"));
 
-// Routes
+// ✅ Routes
 app.use("/auth", authRoutes);
 app.use("/vote", voteRoutes);
 app.use("/admin", adminAuthRoutes);
 app.use("/admin", adminRoutes);
 
-// 404 handler
-app.use((req, res) => res.status(404).json({ error: "Route not found" }));
+// ✅ 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
 
-// Global error handler
+// ✅ Global error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: err.message || "Internal server error" });
+  console.error("❌ Server error:", err.stack);
+  res
+    .status(500)
+    .json({ error: err.message || "Internal server error occurred" });
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
