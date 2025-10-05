@@ -14,7 +14,7 @@ const app = express();
 // Middleware
 // Allow only your frontend origin to access the backend
 const allowedOrigins = [
-  "https://voting-app-frontend-git-main-akinsulure-seyis-projects.vercel.app",
+  "https://new-voting-app-frontend.vercel.app",
   "http://localhost:5173" // optional: for local frontend testing
 ];
 
