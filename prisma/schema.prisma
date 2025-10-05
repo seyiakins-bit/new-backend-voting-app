@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  name      String
+  email     String     @unique
+  password  String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  role      Role       @default(VOTER)
+  voterId   String?    @unique
+  candidate Candidate?
+  votes     Vote[]
+}
+
+model Candidate {
+  id         Int       @id @default(autoincrement())
+  party      String
+  votes      Int       @default(0)
+  createdAt  DateTime  @default(now())
+  imageUrl   String?
+  updatedAt  DateTime  @updatedAt
+  electionId Int?
+  userId     Int       @unique
+  election   Election? @relation(fields: [electionId], references: [id])
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votesLog   Vote[]
+}
+
+model Election {
+  id          Int         @id @default(autoincrement())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  candidates  Candidate[]
+  votes       Vote[]
+}
+
+model Vote {
+  id          Int       @id @default(autoincrement())
+  voterId     Int
+  candidateId Int
+  createdAt   DateTime  @default(now())
+  electionId  Int
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  election    Election  @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  voter       User      @relation(fields: [voterId], references: [id], onDelete: Cascade)
+
+  @@unique([voterId, electionId])
+}
+
+enum Role {
+  ADMIN
+  VOTER
+}
