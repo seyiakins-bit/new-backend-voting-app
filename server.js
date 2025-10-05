@@ -12,22 +12,24 @@ dotenv.config();
 const app = express();
 
 // Middleware
-// Allow only your frontend origin to access the backend
+// Allow requests from any frontend dynamically
 const allowedOrigins = [
-  "https://new-voting-app-frontend.vercel.app",
-  "http://localhost:5173" // optional: for local frontend testing
+  "https://new-voting-app-frontend.vercel.app", // main frontend
+  "http://localhost:5173" // local testing
 ];
 
+// Optionally, allow **any Vercel preview deployment** automatically
 app.use(
   cors({
     origin: function(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow requests with no origin (like Postman) or known origins
+      if (!origin || allowedOrigins.includes(origin) || origin.includes("vercel.app")) {
         callback(null, true);
       } else {
         callback(new Error("CORS policy: This origin is not allowed"));
       }
     },
-    credentials: true, // if you are sending cookies or auth headers
+    credentials: true, // for cookies/auth headers
   })
 );
 
