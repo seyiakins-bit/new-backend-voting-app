@@ -4,45 +4,46 @@ import dotenv from "dotenv";
 
 import authRoutes from "./routes/authRoutes.js";
 import voteRoutes from "./routes/voteroutes.js";
-import adminAuthRoutes from "./routes/adminAuth.js";   // ✅ admin login
-import adminRoutes from "./routes/adminRoutes.js";     // ✅ protected admin routes
+import adminAuthRoutes from "./routes/adminAuth.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 dotenv.config();
 
 const app = express();
 
-// Middleware
-// Allow requests from any frontend dynamically
+// Allowed origins
 const allowedOrigins = [
   "https://new-voting-app-frontend.vercel.app", // main frontend
-  "http://localhost:5173" // local testing
+  "http://localhost:5173",                       // local testing
 ];
 
-// Optionally, allow **any Vercel preview deployment** automatically
+// CORS middleware
 app.use(
   cors({
     origin: function(origin, callback) {
-      // Allow requests with no origin (like Postman) or known origins
-      if (!origin || allowedOrigins.includes(origin) || origin.includes("vercel.app")) {
+      // Allow Postman or known origins
+      if (!origin || allowedOrigins.includes(origin) || (origin && origin.includes("vercel.app"))) {
         callback(null, true);
       } else {
         callback(new Error("CORS policy: This origin is not allowed"));
       }
     },
-    credentials: true, // for cookies/auth headers
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
 app.use(express.json());
 
-// Test route to verify server is running
+// Test route
 app.get("/", (req, res) => res.send("Server is running"));
 
 // Routes
 app.use("/auth", authRoutes);
 app.use("/vote", voteRoutes);
-app.use("/admin", adminAuthRoutes);   // ✅ login, no token required
-app.use("/admin", adminRoutes);       // ✅ protected routes (need token)
+app.use("/admin", adminAuthRoutes);
+app.use("/admin", adminRoutes);
 
 // 404 handler
 app.use((req, res) => res.status(404).json({ error: "Route not found" }));
