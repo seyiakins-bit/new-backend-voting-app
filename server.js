@@ -11,27 +11,23 @@ dotenv.config();
 
 const app = express();
 
-// ✅ Define allowed origins
-const allowedOrigins = [
-  "https://new-voting-app-frontend.vercel.app", // main frontend on Vercel
-  "http://localhost:5173",                      // local dev
-];
-
-// ✅ Configure CORS middleware
+// ✅ CORS configuration
 app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (Postman, server-to-server)
       if (!origin) return callback(null, true);
 
-      // Allow main frontend or any Vercel deployment
-      const allowed = allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin);
-      if (allowed) return callback(null, true);
+      // Allow any Vercel deployment
+      if (/\.vercel\.app$/.test(origin)) return callback(null, true);
+
+      // Allow local dev
+      if (origin === "http://localhost:5173") return callback(null, true);
 
       console.warn(`❌ Blocked by CORS: ${origin}`);
       return callback(new Error("CORS policy: This origin is not allowed"));
     },
-    credentials: true, // allow cookies if needed
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -61,3 +57,6 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+
+
